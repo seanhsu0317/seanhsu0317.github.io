@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firebase Authentication Example</title>
+</head>
+
+<body>
+  <h1>Firebase Authentication Demo</h1>
+  <video id="camera" autoplay playsinline style="width: 100%; max-width: 500px; border: 1px solid #ccc;"></video>
+  
+  <!-- 錯誤訊息顯示 -->
+  <div id="error" style="color: red; margin-top: 10px;"></div>
+
+  <script>
+    // 取得 HTML 元素
+    const video = document.getElementById("camera");
+    const errorDiv = document.getElementById("error");
+
+    // 啟用攝影機
+    async function startCamera() {
+      try {
+        // 請求攝影機權限並取得影片流
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        
+        // 將影片流設置為 <video> 的來源
+        video.srcObject = stream;
+      } catch (err) {
+        console.error("Error accessing camera:", err.message);
+        errorDiv.textContent = "Unable to access the camera: " + err.message;
+      }
+    }
+
+    // 啟動攝影機
+    startCamera();
+  </script>
+
+  <!-- 註冊表單 -->
+  <h2>Register</h2>
+  <form id="registerForm">
+    <input type="email" id="registerEmail" placeholder="Email" required />
+    <input type="password" id="registerPassword" placeholder="Password" required />
+    <button type="submit">Register</button>
+  </form>
+
+  <!-- 登入表單 -->
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input type="email" id="loginEmail" placeholder="Email" required />
+    <input type="password" id="loginPassword" placeholder="Password" required />
+    <button type="submit">Login</button>
+  </form>
+
+  <!-- 忘記密碼 -->
+  <h2>Forgot Password</h2>
+  <form id="resetPasswordForm">
+    <input type="email" id="resetEmail" placeholder="Email" required />
+    <button type="submit">Reset Password</button>
+  </form>
+
+  <!-- Firebase Initialization and Authentication -->
+  <script type="module">
+    // Import Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHKXK6B4MfuU5Lkr53iZXd_NAHQFicwYU",
+      authDomain: "project-7644097720177189571.firebaseapp.com",
+      projectId: "project-7644097720177189571",
+      storageBucket: "project-7644097720177189571.appspot.com",
+      messagingSenderId: "846914787197",
+      appId: "1:846914787197:web:77e4d7650972e84b5e5e14",
+      measurementId: "G-Z8HE1CD728"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Event Listeners for Forms
+
+    // Register User
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("registerEmail").value;
+      const password = document.getElementById("registerPassword").value;
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        alert("Registration successful!");
+        console.log("User Registered:", userCredential.user);
+      } catch (error) {
+        alert("Registration failed: " + error.message);
+        console.error(error);
+      }
+    });
+
+    // Login User
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        alert("Login successful!");
+        window.location.href = "dashboard.html"; 
+        console.log("User Logged In:", userCredential.user);
+      } catch (error) {
+        alert("Login failed: " + error.message);
+        console.error(error);
+      }
+    });
+  
+
+    // Reset Password
+    document.getElementById("resetPasswordForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("resetEmail").value;
+
+      try {
+        await sendPasswordResetEmail(auth, email);
+        alert("Password reset email sent!");
+      } catch (error) {
+        alert("Failed to send password reset email: " + error.message);
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
