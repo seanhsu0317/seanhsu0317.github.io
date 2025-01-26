@@ -9,32 +9,7 @@
   <h1>Welcome to the Dashboard</h1>
   <p>You have successfully logged in!</p>
   
- <video id="camera" autoplay playsinline style="width: 100%; max-width: 500px; border: 1px solid #ccc;"></video>
-  
-  <!-- 錯誤訊息顯示 -->
-  <div id="error" style="color: red; margin-top: 10px;"></div>
-
-  <script>
-    // 取得 HTML 元素
-    const video = document.getElementById("camera");
-    const errorDiv = document.getElementById("error");
-
-    // 啟用攝影機
-    async function startCamera() {
-      try {
-        // 請求攝影機權限並取得影片流
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        
-        // 將影片流設置為 <video> 的來源
-        video.srcObject = stream;
-      } catch (err) {
-        console.error("Error accessing camera:", err.message);
-        errorDiv.textContent = "Unable to access the camera: " + err.message;
-      }
-    }
-
-    // 啟動攝影機
-    startCamera();
-  </script>
+ <iframe width="644" height="362">
+  src="<iframe width="853" height="480" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Rick Astley - Never Gonna Give You Up (Official Music Video)" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>"
 </body>
 </html>
