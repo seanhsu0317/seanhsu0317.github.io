@@ -12,10 +12,14 @@
   <!-- 顯示歷史紀錄 -->
   <div id="history"></div>
 
+  <!-- 登出按鈕 -->
+  <button id="logoutButton">Logout</button>
+
   <!-- Firebase Initialization and Data Display -->
   <script type="module">
     // Import Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
     // Firebase Configuration
@@ -31,6 +35,7 @@
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getFirestore(app);
 
     // Fetch login history from Firestore
@@ -55,6 +60,18 @@
 
     // Display login history
     fetchLoginHistory();
+
+    // Logout User
+    document.getElementById("logoutButton").addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        alert("Logged out successfully!");
+        window.location.href = "index.html"; // Redirect to login page
+      } catch (error) {
+        alert("Logout failed: " + error.message);
+        console.error(error);
+      }
+    });
   </script>
 </body>
 </html>
