@@ -106,9 +106,6 @@
           timestamp: new Date()
         });
 
-        // 顯示歷史紀錄
-        displayHistory();
-
         // 登入成功後跳轉至 dashboard
         window.location.href = "dashboard.html"; // 成功後轉到 Dashboard
         console.log("User Logged In:", userCredential.user);
@@ -132,22 +129,7 @@
       }
     });
 
-    // 顯示歷史紀錄
-    async function displayHistory() {
-      const user = auth.currentUser;
-      if (user) {
-        const q = query(collection(db, "loginHistory"), where("email", "==", user.email), orderBy("timestamp", "desc"), limit(5));
-        const querySnapshot = await getDocs(q);
-        const historyList = document.getElementById("historyList");
-        historyList.innerHTML = ""; // 清空列表
-
-        querySnapshot.forEach((doc) => {
-          const li = document.createElement("li");
-          li.textContent = `Login at ${new Date(doc.data().timestamp.toDate()).toLocaleString()}`;
-          historyList.appendChild(li);
-        });
-      }
-    }
+   
   </script>
 </body>
 </html>
