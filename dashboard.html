@@ -8,6 +8,26 @@
 <body>
   <h1>Welcome to the Dashboard</h1>
   <p>You haveccessully logged in!</p>
+
+  <script>
+     document.addEventListener("DOMContentLoaded", function () {
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      if (user) {
+        document.getElementById("user-info").innerHTML = `
+          <p><strong>Email:</strong> ${user.email}</p>
+          <p><strong>UID:</strong> ${user.uid}</p>
+          <button onclick="logout()">Logout</button>
+        `;
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+    function logout() {
+      localStorage.removeItem("user");
+      window.location.href = "login.html";
+    }
+  </script>
   
   <iframe 
     width="853" 
@@ -19,5 +39,6 @@
     referrerpolicy="strict-origin-when-cross-origin" 
     allowfullscreen>
   </iframe>
+
 </body>
 </html>
