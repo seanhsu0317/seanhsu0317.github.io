@@ -3,100 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase Authentication Example</title>
+  <title>Login</title>
 </head>
 <body>
-  <h1>Firebase Authentication Demo</h1>
-
-  <!-- 註冊表單 -->
-  <h2>Register</h2>
-  <form id="registerForm">
-    <input type="email" id="registerEmail" placeholder="Email" required />
-    <input type="password" id="registerPassword" placeholder="Password" required />
-    <button type="submit">Register</button>
-  </form>
+  <h1>Login Page</h1>
 
   <!-- 登入表單 -->
-  <h2>Login</h2>
   <form id="loginForm">
     <input type="email" id="loginEmail" placeholder="Email" required />
     <input type="password" id="loginPassword" placeholder="Password" required />
     <button type="submit">Login</button>
   </form>
 
-  <!-- 忘記密碼 -->
-  <h2>Forgot Password</h2>
-  <form id="resetPasswordForm">
-    <input type="email" id="resetEmail" placeholder="Email" required />
-    <button type="submit">Reset Password</button>
-  </form>
-
-  <!-- Firebase Initialization and Authentication -->
   <script type="module">
     // Import Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
 
     // Firebase Configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyDHKXK6B4MfuU5Lkr53iZXd_NAHQFicwYU",
-      authDomain: "project-7644097720177189571.firebaseapp.com",
-      projectId: "project-7644097720177189571",
-      storageBucket: "project-7644097720177189571.appspot.com",
-      messagingSenderId: "846914787197",
-      appId: "1:846914787197:web:77e4d7650972e84b5e5e14",
-      measurementId: "G-Z8HE1CD728"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID",
     };
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Event Listeners for Forms
-
-    // Register User
-    document.getElementById("registerForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("registerEmail").value;
-      const password = document.getElementById("registerPassword").value;
-
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        alert("Registration successful!");
-        console.log("User Registered:", userCredential.user);
-      } catch (error) {
-        alert("Registration failed: " + error.message);
-        console.error(error);
-      }
-    });
-
-    // Login User
+    // 登入表單事件監聽
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+      e.preventDefault(); // 防止表單預設提交行為
+
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
 
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        alert("Login successful!");
-        console.log("User Logged In:", userCredential.user);
+        console.log("Login successful:", userCredential.user);
+
+        // 登入成功後跳轉
+        window.location.href = "dashboard.html";
       } catch (error) {
+        console.error("Login failed:", error.message);
         alert("Login failed: " + error.message);
-        console.error(error);
-      }
-    });
-
-    // Reset Password
-    document.getElementById("resetPasswordForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("resetEmail").value;
-
-      try {
-        await sendPasswordResetEmail(auth, email);
-        alert("Password reset email sent!");
-      } catch (error) {
-        alert("Failed to send password reset email: " + error.message);
-        console.error(error);
       }
     });
   </script>
