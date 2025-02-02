@@ -61,17 +61,13 @@
     // Display login history
     fetchLoginHistory();
 
-    // Logout User
-    document.getElementById("logoutButton").addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-        alert("Logged out successfully!");
-        window.location.href = "index.html"; // Redirect to login page
-      } catch (error) {
-        alert("Logout failed: " + error.message);
-        console.error(error);
-      }
-    });
+    function logout() {
+      signOut(auth).then(() => {
+        window.location.href = "index.html";  // 登出後跳回登入頁
+      });
+    }
+
+    window.logout = logout;
   </script>
 </body>
 </html>
