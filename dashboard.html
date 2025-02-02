@@ -5,18 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
 </head>
-
 <body>
-  <h1>Welcome o the Dashboard</h1>
-  <div id="user-info"></div>
+  <h1>Welcome to the Dashboard</h1>
+  <p>You have successfully logged in!</p>
+  
+  <!-- 顯示歷史紀錄 -->
   <div id="history"></div>
-  <button onclick="logout()">Logout</button>
 
+  <!-- Firebase Initialization and Data Display -->
   <script type="module">
+    // Import Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-    import { getFirestore, collection, getDocs, addDoc, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDHKXK6B4MfuU5Lkr53iZXd_NAHQFicwYU",
       authDomain: "project-7644097720177189571.firebaseapp.com",
@@ -24,39 +26,22 @@
       storageBucket: "project-7644097720177189571.appspot.com",
       messagingSenderId: "846914787197",
       appId: "1:846914787197:web:77e4d7650972e84b5e5e14",
+      measurementId: "G-Z8HE1CD728"
     };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // 監聽登入狀態
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "index.html";  // 未登入時跳回登入頁
+    // Fetch login history from Firestore
+    async function fetchLoginHistory() {
+      const historyRef = collection(db, "loginHistory");
+      const q = query(historyRef, orderBy("timestamp", "desc"));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        document.getElementById("history").innerHTML = "<p>No login history available.</p>";
       } else {
-        document.getElementById("user-info").innerHTML = `
-          <h2>Welcome, ${user.email}</h2>
-          <p><strong>UID:</strong> ${user.uid}</p>
-        `;
-
-        // 記錄登入歷史
-        try {
-          await addDoc(collection(db, "loginHistory"), {
-            email: user.email,
-            uid: user.uid,
-            timestamp: serverTimestamp()
-          });
-          console.log("Login history added successfully!");
-        } catch (error) {
-          console.error("Error adding document: ", error);
-        }
-
-        // 讀取登入歷史資料
-        const historyRef = collection(db, "loginHistory");
-        const q = query(historyRef, orderBy("timestamp", "desc"));
-        const querySnapshot = await getDocs(q);
-
         let historyHTML = "<h3>Login History</h3><ul>";
         querySnapshot.forEach((doc) => {
           const data = doc.data();
@@ -66,16 +51,10 @@
         historyHTML += "</ul>";
         document.getElementById("history").innerHTML = historyHTML;
       }
-    });
-
-    // 登出功能
-    function logout() {
-      signOut(auth).then(() => {
-        window.location.href = "index.html";  // 登出後跳回登入頁
-      });
     }
 
-    window.logout = logout;
+    // Display login history
+    fetchLoginHistory();
   </script>
 </body>
 </html>
