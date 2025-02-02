@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase Authentication Example</title>
+  <title>Firebase Authentication Demo</title>
 </head>
 
 <body>
   <h1>Firebase Authentication Demo</h1>
-  
+
   <!-- 顯示鏡頭 -->
   <video id="camera" autoplay playsinline style="width: 100%; max-width: 500px; border: 1px solid #ccc;"></video>
   
@@ -51,29 +51,32 @@
     <button type="submit">Reset Password</button>
   </form>
 
+  <!-- 歷史紀錄 -->
+  <h2>Login History</h2>
+  <ul id="historyList"></ul>
+
   <!-- Firebase 設定與認證 -->
   <script type="module">
-  // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+    // Firebase SDK 引入
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDHKXK6B4MfuU5Lkr53iZXd_NAHQFicwYU",
-  authDomain: "project-7644097720177189571.firebaseapp.com",
-  projectId: "project-7644097720177189571",
-  storageBucket: "project-7644097720177189571.firebasestorage.app",
-  messagingSenderId: "846914787197",
-  appId: "1:846914787197:web:77e4d7650972e84b5e5e14",
-  measurementId: "G-Z8HE1CD728"
-};
+    // Firebase 設定
+    const firebaseConfig = {
+      apiKey: "AIzaSyDHKXK6B4MfuU5Lkr53iZXd_NAHQFicwYU",
+      authDomain: "project-7644097720177189571.firebaseapp.com",
+      projectId: "project-7644097720177189571",
+      storageBucket: "project-7644097720177189571.appspot.com",
+      messagingSenderId: "846914787197",
+      appId: "1:846914787197:web:77e4d7650972e84b5e5e14",
+      measurementId: "G-Z8HE1CD728"
+    };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+    // 初始化 Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
     // 註冊使用者
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
@@ -100,6 +103,17 @@ const analytics = getAnalytics(app);
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
+        
+        // 儲存登入歷史紀錄
+        const user = userCredential.user;
+        await addDoc(collection(db, "loginHistory"), {
+          email: user.email,
+          timestamp: new Date()
+        });
+        
+        // 顯示歷史紀錄
+        displayHistory();
+
         window.location.href = "dashboard.html"; // 成功後轉到 Dashboard
         console.log("User Logged In:", userCredential.user);
       } catch (error) {
@@ -121,6 +135,23 @@ const analytics = getAnalytics(app);
         console.error(error);
       }
     });
+
+    // 顯示歷史紀錄
+    async function displayHistory() {
+      const user = auth.currentUser;
+      if (user) {
+        const q = query(collection(db, "loginHistory"), where("email", "==", user.email), orderBy("timestamp", "desc"), limit(5));
+        const querySnapshot = await getDocs(q);
+        const historyList = document.getElementById("historyList");
+        historyList.innerHTML = ""; // 清空列表
+
+        querySnapshot.forEach((doc) => {
+          const li = document.createElement("li");
+          li.textContent = `Login at ${new Date(doc.data().timestamp.toDate()).toLocaleString()}`;
+          historyList.appendChild(li);
+        });
+      }
+    }
   </script>
 </body>
 </html>
