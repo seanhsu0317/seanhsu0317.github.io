@@ -3,29 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase Authentication Demo</title>
+  <title>Firebase Authentication Example</title>
 </head>
 <body>
   <h1>Firebase Authentication Demo</h1>
-
-  <!-- 顯示鏡頭 -->
-  <video id="camera" autoplay playsinline style="width: 100%; max-width: 500px; border: 1px solid #ccc;"></video>
-  
-  <!-- 顯示錯誤訊息 -->
-  <div id="error" style="color: red; margin-top: 10px;"></div>
-
-  <script>
-    // 啟用攝影機
-    async function startCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        document.getElementById("camera").srcObject = stream;
-      } catch (err) {
-        document.getElementById("error").textContent = "Unable to access the camera: " + err.message;
-      }
-    }
-    startCamera();
-  </script>
 
   <!-- 註冊表單 -->
   <h2>Register</h2>
@@ -43,21 +24,20 @@
     <button type="submit">Login</button>
   </form>
 
-  <!-- 忘記密碼表單 -->
+  <!-- 忘記密碼 -->
   <h2>Forgot Password</h2>
   <form id="resetPasswordForm">
     <input type="email" id="resetEmail" placeholder="Email" required />
     <button type="submit">Reset Password</button>
   </form>
 
-  <!-- Firebase 設定與認證 -->
+  <!-- Firebase Initialization and Authentication -->
   <script type="module">
-    // Firebase SDK 引入
+    // Import Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
-    // Firebase 設定
+    // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDHKXK6B4MfuU5Lkr53iZXd_NAHQFicwYU",
       authDomain: "project-7644097720177189571.firebaseapp.com",
@@ -68,12 +48,13 @@
       measurementId: "G-Z8HE1CD728"
     };
 
-    // 初始化 Firebase
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
 
-    // 註冊使用者
+    // Event Listeners for Forms
+
+    // Register User
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = document.getElementById("registerEmail").value;
@@ -89,7 +70,7 @@
       }
     });
 
-    // 登入使用者
+    // Login User
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = document.getElementById("loginEmail").value;
@@ -98,16 +79,6 @@
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-
-        // 儲存登入歷史紀錄
-        const user = userCredential.user;
-        await addDoc(collection(db, "loginHistory"), {
-          email: user.email,
-          timestamp: new Date()
-        });
-
-        // 登入成功後跳轉至 dashboard
-        window.location.href = "dashboard.html"; // 成功後轉到 Dashboard
         console.log("User Logged In:", userCredential.user);
       } catch (error) {
         alert("Login failed: " + error.message);
@@ -115,7 +86,7 @@
       }
     });
 
-    // 忘記密碼處理
+    // Reset Password
     document.getElementById("resetPasswordForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = document.getElementById("resetEmail").value;
@@ -128,8 +99,6 @@
         console.error(error);
       }
     });
-
-   
   </script>
 </body>
 </html>
