@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Firebase Authentication Demo</title>
 </head>
-
 <body>
   <h1>Firebase Authentication Demo</h1>
 
@@ -50,10 +49,6 @@
     <input type="email" id="resetEmail" placeholder="Email" required />
     <button type="submit">Reset Password</button>
   </form>
-
-  <!-- 歷史紀錄 -->
-  <h2>Login History</h2>
-  <ul id="historyList"></ul>
 
   <!-- Firebase 設定與認證 -->
   <script type="module">
@@ -103,17 +98,18 @@
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        
+
         // 儲存登入歷史紀錄
         const user = userCredential.user;
         await addDoc(collection(db, "loginHistory"), {
           email: user.email,
           timestamp: new Date()
         });
-        
+
         // 顯示歷史紀錄
         displayHistory();
 
+        // 登入成功後跳轉至 dashboard
         window.location.href = "dashboard.html"; // 成功後轉到 Dashboard
         console.log("User Logged In:", userCredential.user);
       } catch (error) {
