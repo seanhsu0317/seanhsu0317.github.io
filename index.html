@@ -35,6 +35,8 @@
     startCamera();
   </script>
 
+  
+
   <!-- 註冊表單 -->
   <h2>Register</h2>
   <form id="registerForm">
@@ -98,6 +100,34 @@
         alert("Login failed: " + error.message);
         console.error(error);
       }
+    });
+
+     // 🔹 攝影機功能
+    const video = document.getElementById("camera");
+    const canvas = document.getElementById("canvas");
+    const photo = document.getElementById("photo");
+    const captureButton = document.getElementById("capture");
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+      } catch (err) {
+        alert("無法存取攝影機: " + err.message);
+      }
+    }
+
+    startCamera();
+
+     // 🔹 拍攝照片
+     captureButton.addEventListener("click", () => {
+      const context = canvas.getContext("2d");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      photo.src = canvas.toDataURL("image/png");
+      photo.style.display = "block";
     });
   </script>
 </body>
