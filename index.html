@@ -10,6 +10,14 @@
 
   <!-- 顯示鏡頭 -->
   <video id="camera" autoplay playsinline style="width: 100%; max-width: 500px; border: 1px solid #ccc;"></video>
+
+  <!-- 拍攝按鈕 -->
+  <button id="capture">Capture Photo</button>
+
+  <!-- 顯示拍攝的照片 -->
+  <canvas id="canvas" style="display: none;"></canvas>
+  <img id="photo" style="display: none; width: 100%; max-width: 500px; border: 1px solid #ccc;"/>
+
   
   <!-- 顯示錯誤訊息 -->
   <div id="error" style="color: red; margin-top: 10px;"></div>
