@@ -119,15 +119,23 @@
 
     startCamera();
 
-     // 🔹 拍攝照片
-     captureButton.addEventListener("click", () => {
-      const context = canvas.getContext("2d");
+     // ✅ 拍照並上傳
+    document.getElementById('captureBtn').addEventListener('click', async () => {
+      const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
-      
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      photo.src = canvas.toDataURL("image/png");
-      photo.style.display = "block";
+      canvas.getContext('2d').drawImage(video, 0, 0);
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+
+      const user = auth.currentUser;
+      if (user) {
+        const storageRef = ref(storage, `photos/${user.uid}_${Date.now()}.jpg`);
+        await uploadBytes(storageRef, blob);
+        alert('照片已上傳成功！');
+      } else {
+        alert('請先登入！');
+      }
     });
   </script>
 </body>
