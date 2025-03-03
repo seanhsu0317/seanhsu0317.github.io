@@ -3,16 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login with Photo</title>
+  <title>Firebase Authentication Demo</title>
 </head>
 <body>
-  <h1>Firebase Login with Photo</h1>
+  <h1>Firebase Authentication Demo</h1>
 
-  <!-- 鏡頭畫面 -->
-  <video id="camera" autoplay playsinline width="300"></video>
-  <canvas id="snapshot" style="display: none;"></canvas>
+  <!-- 顯示鏡頭 -->
+  <video id="camera" autoplay playsinline style="width: 100%; max-width: 500px; border: 1px solid #ccc;"></video>
 
-  <!-- 註冊 -->
+  <!-- 拍攝按鈕 -->
+  <button id="capture">Capture Photo</button>
+
+  <!-- 顯示拍攝的照片 -->
+  <canvas id="canvas" style="display: none;"></canvas>
+  <img id="photo" style="display: none; width: 100%; max-width: 500px; border: 1px solid #ccc;"/>
+
+  
+  <!-- 顯示錯誤訊息 -->
+  <div id="error" style="color: red; margin-top: 10px;"></div>
+
+  <script>
+    // 啟用攝影機
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        document.getElementById("camera").srcObject = stream;
+      } catch (err) {
+        document.getElementById("error").textContent = "Unable to access the camera: " + err.message;
+      }
+    }
+    startCamera();
+  </script>
+
+  
+
+  <!-- 註冊表單 -->
   <h2>Register</h2>
   <form id="registerForm">
     <input type="email" id="registerEmail" placeholder="Email" required />
@@ -20,113 +45,89 @@
     <button type="submit">Register</button>
   </form>
 
-  <!-- 忘記密碼 -->
+  <!-- 登入表單 -->
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input type="email" id="loginEmail" placeholder="Email" required />
+    <input type="password" id="loginPassword" placeholder="Password" required />
+    <button type="submit">Login</button>
+  </form>
+
+  <!-- 忘記密碼表單 -->
   <h2>Forgot Password</h2>
   <form id="resetPasswordForm">
     <input type="email" id="resetEmail" placeholder="Email" required />
     <button type="submit">Reset Password</button>
   </form>
 
-  <!-- 登入 -->
-  <h2>Login</h2>
-  <form id="loginForm">
-    <input type="email" id="loginEmail" placeholder="Email" required />
-    <input type="password" id="loginPassword" placeholder="Password" required />
-    <button type="submit">Login with Photo</button>
-  </form>
-
-  <!-- Firebase -->
+  <!-- Firebase 設定與認證 -->
   <script type="module">
+    // Firebase SDK 引入
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
 
+    // Firebase 設定
     const firebaseConfig = {
       apiKey: "AIzaSyDHKXK6B4MfuU5Lkr53iZXd_NAHQFicwYU",
       authDomain: "project-7644097720177189571.firebaseapp.com",
       projectId: "project-7644097720177189571",
       storageBucket: "project-7644097720177189571.appspot.com",
       messagingSenderId: "846914787197",
-      appId: "1:846914787197:web:77e4d7650972e84b5e5e14"
+      appId: "1:846914787197:web:77e4d7650972e84b5e5e14",
+      measurementId: "G-Z8HE1CD728"
     };
 
+    // 初始化 Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
 
-    const video = document.getElementById('camera');
-    const canvas = document.getElementById('snapshot');
-
-    // 開啟鏡頭
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => video.srcObject = stream)
-      .catch(err => console.error("Camera error:", err));
-
-    // 拍照
-    function takePhoto() {
-      const context = canvas.getContext('2d');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      return canvas.toDataURL('image/jpeg');
-    }
-
-    // 註冊
-    document.getElementById("registerForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("registerEmail").value;
-      const password = document.getElementById("registerPassword").value;
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert("Registered successfully!");
-      } catch (error) {
-        alert("Registration failed: " + error.message);
-      }
-    });
-
-    // 忘記密碼
-    document.getElementById("resetPasswordForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("resetEmail").value;
-      try {
-        await sendPasswordResetEmail(auth, email);
-        alert("Password reset email sent!");
-      } catch (error) {
-        alert("Reset failed: " + error.message);
-      }
-    });
-
-    // 登入 & 拍照上傳
+    // 登入使用者
     document.getElementById("loginForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = document.getElementById("loginEmail").value;
       const password = document.getElementById("loginPassword").value;
-      const photoDataURL = takePhoto();
-      const blob = await (await fetch(photoDataURL)).blob();
-      
+
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const uid = userCredential.user.uid;
+        alert("Login successful!");
 
-        const photoRef = ref(storage, `photos/${uid}/${Date.now()}.jpg`);
-        await uploadBytes(photoRef, blob);
-        const photoURL = await getDownloadURL(photoRef);
+        // 顯示登入成功訊息
+        console.log("User Logged In:", userCredential.user);
 
-        await addDoc(collection(db, "loginPhotos"), {
-          uid: uid,
-          email: email,
-          photoURL: photoURL,
-          timestamp: new Date()
-        });
-
-        alert("Login & photo uploaded!");
-        window.location.href = "dashboard.html";
-
+        // 登入成功後跳轉至 dashboard
+        window.location.href = "dashboard.html"; // 成功後轉到 Dashboard
       } catch (error) {
         alert("Login failed: " + error.message);
+        console.error(error);
       }
+    });
+
+     // 🔹 攝影機功能
+    const video = document.getElementById("camera");
+    const canvas = document.getElementById("canvas");
+    const photo = document.getElementById("photo");
+    const captureButton = document.getElementById("capture");
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+      } catch (err) {
+        alert("無法存取攝影機: " + err.message);
+      }
+    }
+
+    startCamera();
+
+     // 🔹 拍攝照片
+     captureButton.addEventListener("click", () => {
+      const context = canvas.getContext("2d");
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      photo.src = canvas.toDataURL("image/png");
+      photo.style.display = "block";
     });
   </script>
 </body>
