@@ -40,7 +40,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHKXK6B4MfuU5Lkr53iZXd_NAHQFicwYU",
@@ -53,6 +54,7 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -73,7 +75,7 @@
       try {
         await signInWithEmailAndPassword(auth, email, password);
         alert("Login successful!");
-        window.location.href = "dashboard.html"; // 🔥 這一行是跳轉到 dashboard.html
+        window.location.href = "dashboard.html";
       } catch (error) {
         alert("Login failed: " + error.message);
       }
@@ -106,18 +108,23 @@
     }
     startCamera();
 
-    // 拍照並上傳到 Cloudinary
+    // 拍照並上傳到 Cloudinary 並儲存 URL 到 Firestore
     captureBtn.addEventListener("click", async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Please login first.");
+        return;
+      }
+      
       const context = canvas.getContext("2d");
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageData = canvas.toDataURL("image/png");
       
-      // 將圖片上傳到 Cloudinary
       const formData = new FormData();
       formData.append("file", imageData);
-      formData.append("upload_preset", "ycdwf17x"); // 你的 Cloudinary upload_preset
+      formData.append("upload_preset", "ycdwf17x"); 
       
       try {
         const response = await fetch("https://api.cloudinary.com/v1_1/dqkjvynfx/image/upload", {
@@ -127,7 +134,11 @@
         const data = await response.json();
         uploadedImage.src = data.secure_url;
         uploadedImage.style.display = "block";
-        alert("Upload successful! URL: " + data.secure_url);
+        alert("Upload successful!");
+        
+        // 將圖片 URL 存入 Firestore
+        await setDoc(doc(db, "userPhotos", user.uid), { photoURL: data.secure_url }, { merge: true });
+        alert("Photo linked to account!");
       } catch (error) {
         console.error("Upload error:", error);
         alert("Upload failed!");
