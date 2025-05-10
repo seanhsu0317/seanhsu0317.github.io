@@ -3,29 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register & Upload Photo</title>
+  <title>註冊與拍照上傳</title>
 </head>
 <body>
   <h1>註冊與拍照上傳照片</h1>
 
-  <!-- ✅ 註冊表單 -->
-  <h2>註冊帳號</h2>
-  <form id="registerForm">
+  <!-- ✅ 註冊與拍照表單 -->
+  <form id="registerAndUploadForm">
     <input type="email" id="registerEmail" placeholder="Email" required />
     <input type="password" id="registerPassword" placeholder="Password" required />
-    <button type="submit">註冊</button>
+    <button type="submit">註冊並拍照上傳</button>
   </form>
 
-  <!-- ✅ 攝影機預覽與拍照上傳功能 -->
-  <h2>拍照並上傳</h2>
+  <!-- ✅ 攝影機預覽 -->
   <video id="camera" autoplay playsinline style="width: 100%; max-width: 500px; border: 1px solid #ccc;"></video>
-  <button id="captureBtn">拍照並上傳</button>
   <canvas id="canvas" style="display: none;"></canvas>
   <img id="uploadedImage" style="display: none; max-width: 500px; margin-top: 10px;" />
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -38,27 +35,13 @@
   measurementId: "G-Z8HE1CD728"
     };
 
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ✅ 註冊處理邏輯
-    document.getElementById("registerForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("registerEmail").value;
-      const password = document.getElementById("registerPassword").value;
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        alert("註冊成功！現在可以拍照上傳照片");
-      } catch (error) {
-        alert("註冊失敗: " + error.message);
-      }
-    });
-
-    // ✅ 開啟攝影機
     const video = document.getElementById("camera");
     const canvas = document.getElementById("canvas");
-    const captureBtn = document.getElementById("captureBtn");
     const uploadedImage = document.getElementById("uploadedImage");
 
     async function startCamera() {
@@ -71,30 +54,33 @@
     }
     startCamera();
 
-    // ✅ 拍照與 Cloudinary 上傳邏輯
-    captureBtn.addEventListener("click", async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        alert("請先註冊帳號");
-        return;
-      }
-
-      const context = canvas.getContext("2d");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = canvas.toDataURL("image/png");
-
-      const formData = new FormData();
-      formData.append("file", imageData);
-      formData.append("upload_preset", "ycdwf17x"); 
+    document.getElementById("registerAndUploadForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("registerEmail").value;
+      const password = document.getElementById("registerPassword").value;
 
       try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        alert("註冊成功，開始拍照上傳...");
+
+        // 拍照
+        const context = canvas.getContext("2d");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL("image/png");
+
+        const formData = new FormData();
+        formData.append("file", imageData);
+        formData.append("upload_preset", "ycdwf17x"); 
+
         const response = await fetch("https://api.cloudinary.com/v1_1/dqkjvynfx/image/upload", {
           method: "POST",
           body: formData
         });
         const data = await response.json();
+
         uploadedImage.src = data.secure_url;
         uploadedImage.style.display = "block";
         alert("照片上傳成功！");
@@ -106,11 +92,19 @@
         }, { merge: true });
 
         alert("已將照片與帳號連結存入 Firestore");
+
+        // ✅ 呼叫照片分析演算法（請在下方實作）
+        analyzePhoto(data.secure_url);
       } catch (error) {
-        console.error("Upload error:", error);
-        alert("上傳失敗");
+        alert("發生錯誤: " + error.message);
       }
     });
+
+    // ✅ 範例分析函式（請根據實際邏輯修改）
+    function analyzePhoto(photoURL) {
+      console.log("分析照片: ", photoURL);
+      // 這裡寫你的照片分析邏輯，例如發送到伺服器、比對人臉等
+    }
   </script>
 </body>
 </html>
