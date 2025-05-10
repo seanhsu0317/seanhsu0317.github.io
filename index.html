@@ -3,96 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase Authentication & Camera</title>
+  <title>Register & Upload Photo</title>
 </head>
 <body>
-  <h1>Firebase Authentication & Camera Upload</h1>
-  
-  <!-- 註冊表單 -->
-  <h2>Register</h2>
+  <h1>註冊與拍照上傳照片</h1>
+
+  <!-- ✅ 註冊表單 -->
+  <h2>註冊帳號</h2>
   <form id="registerForm">
     <input type="email" id="registerEmail" placeholder="Email" required />
     <input type="password" id="registerPassword" placeholder="Password" required />
-    <button type="submit">Register</button>
+    <button type="submit">註冊</button>
   </form>
 
-  <!-- 登入表單 -->
-  <h2>Login</h2>
-  <form id="loginForm">
-    <input type="email" id="loginEmail" placeholder="Email" required />
-    <input type="password" id="loginPassword" placeholder="Password" required />
-    <button type="submit">Login</button>
-  </form>
-
-  <!-- 忘記密碼 -->
-  <h2>Forgot Password</h2>
-  <form id="resetPasswordForm">
-    <input type="email" id="resetEmail" placeholder="Email" required />
-    <button type="submit">Reset Password</button>
-  </form>
-
-  <!-- 攝影機預覽 -->
-  <h2>Camera</h2>
+  <!-- ✅ 攝影機預覽與拍照上傳功能 -->
+  <h2>拍照並上傳</h2>
   <video id="camera" autoplay playsinline style="width: 100%; max-width: 500px; border: 1px solid #ccc;"></video>
-  <button id="captureBtn">Capture Photo</button>
+  <button id="captureBtn">拍照並上傳</button>
   <canvas id="canvas" style="display: none;"></canvas>
   <img id="uploadedImage" style="display: none; max-width: 500px; margin-top: 10px;" />
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
     import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDHKXK6B4MfuU5Lkr53iZXd_NAHQFicwYU",
-      authDomain: "project-7644097720177189571.firebaseapp.com",
-      projectId: "project-7644097720177189571",
-      storageBucket: "project-7644097720177189571.appspot.com",
-      messagingSenderId: "846914787197",
-      appId: "1:846914787197:web:77e4d7650972e84b5e5e14"
+  authDomain: "project-7644097720177189571.firebaseapp.com",
+  projectId: "project-7644097720177189571",
+  storageBucket: "project-7644097720177189571.firebasestorage.app",
+  messagingSenderId: "846914787197",
+  appId: "1:846914787197:web:77e4d7650972e84b5e5e14",
+  measurementId: "G-Z8HE1CD728"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // ✅ 註冊處理邏輯
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = document.getElementById("registerEmail").value;
       const password = document.getElementById("registerPassword").value;
       try {
         await createUserWithEmailAndPassword(auth, email, password);
-        alert("Registration successful!");
+        alert("註冊成功！現在可以拍照上傳照片");
       } catch (error) {
-        alert("Registration failed: " + error.message);
+        alert("註冊失敗: " + error.message);
       }
     });
 
-    document.getElementById("loginForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("Login successful!");
-        window.location.href = "dashboard.html";
-      } catch (error) {
-        alert("Login failed: " + error.message);
-      }
-    });
-
-    document.getElementById("resetPasswordForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("resetEmail").value;
-      try {
-        await sendPasswordResetEmail(auth, email);
-        alert("Password reset email sent!");
-      } catch (error) {
-        alert("Failed to send password reset email: " + error.message);
-      }
-    });
-
-    // 啟用攝影機
+    // ✅ 開啟攝影機
     const video = document.getElementById("camera");
     const canvas = document.getElementById("canvas");
     const captureBtn = document.getElementById("captureBtn");
@@ -108,24 +71,24 @@
     }
     startCamera();
 
-    // 拍照並上傳到 Cloudinary 並儲存 URL 到 Firestore
+    // ✅ 拍照與 Cloudinary 上傳邏輯
     captureBtn.addEventListener("click", async () => {
       const user = auth.currentUser;
       if (!user) {
-        alert("Please login first.");
+        alert("請先註冊帳號");
         return;
       }
-      
+
       const context = canvas.getContext("2d");
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       const imageData = canvas.toDataURL("image/png");
-      
+
       const formData = new FormData();
       formData.append("file", imageData);
       formData.append("upload_preset", "ycdwf17x"); 
-      
+
       try {
         const response = await fetch("https://api.cloudinary.com/v1_1/dqkjvynfx/image/upload", {
           method: "POST",
@@ -134,14 +97,18 @@
         const data = await response.json();
         uploadedImage.src = data.secure_url;
         uploadedImage.style.display = "block";
-        alert("Upload successful!");
-        
-        // 將圖片 URL 存入 Firestore
-        await setDoc(doc(db, "userPhotos", user.uid), { photoURL: data.secure_url }, { merge: true });
-        alert("Photo linked to account!");
+        alert("照片上傳成功！");
+
+        await setDoc(doc(db, "userPhotos", user.uid), {
+          email: user.email,
+          photoURL: data.secure_url,
+          timestamp: new Date()
+        }, { merge: true });
+
+        alert("已將照片與帳號連結存入 Firestore");
       } catch (error) {
         console.error("Upload error:", error);
-        alert("Upload failed!");
+        alert("上傳失敗");
       }
     });
   </script>
